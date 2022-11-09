@@ -2,6 +2,7 @@ const express = require('express')
 const dotenv = require('dotenv')
 const path = require('path')
 const mongoose = require('mongoose')
+const Campground = require('./models/campgrounds')
 
 const app = express()
 dotenv.config()
@@ -18,6 +19,11 @@ app.set('views', path.join(__dirname, 'views'))
 
 app.get('/', (req, res) => {
     res.render('home')
+})
+app.get('/makecampground', async (req, res) => {
+    const camp = new Campground({ title: 'My backyard',description: 'cheap camping', price: 0 })
+    await camp.save()
+    res.send(camp)
 })
 
 app.listen(process.env.PORT, () => [
