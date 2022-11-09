@@ -3,6 +3,9 @@ const dotenv = require('dotenv')
 const path = require('path')
 const mongoose = require('mongoose')
 const Campground = require('./models/campgrounds')
+const { urlencoded } = require('express')
+const methodOverride = require('method-override')
+// const campgrounds = require('./models/campgrounds')
 
 const app = express()
 dotenv.config()
@@ -17,13 +20,49 @@ db.once('open', () => {
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
+app.use(urlencoded({ extended: true }))
+app.use(methodOverride('_method'))
+
 app.get('/', (req, res) => {
     res.render('home')
 })
-app.get('/makecampground', async (req, res) => {
-    const camp = new Campground({ title: 'My backyard',description: 'cheap camping', price: 0 })
-    await camp.save()
-    res.send(camp)
+
+app.get('/campgrounds', async (req, res) => {
+    const campgrounds = await Campground.find({})
+    res.render('campgrounds/index', { campgrounds })
+})
+
+app.get('/campgrounds/new', (req, res) => {
+    res.render('campgrounds/new')
+})
+
+app.get('/campgrounds/:id', async (req, res) => {
+    const campground = await Campground.findById(req.params.id)
+    res.render('campgrounds/show', { campground })
+})
+
+app.get('/campgrounds/:id/edit', async (req, res) => {
+    const campground = await Campground.findById(req.params.id)
+    res.render('campgrounds/edit', { campground })
+})
+
+app.post('/campgrounds', async (req, res) => {
+    const campground = new Campground(req.body.campground)
+    await campground.save()
+    res.redirect(`/campgrounds/${campground._id}`)
+})
+
+app.put('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params
+    const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground })
+    res.redirect(`/campgrounds/${campground._id}`)
+})
+
+app.delete('/campgrounds/:id', async (req, res) => {
+    const { id } = req.params
+    await Campground.findByIdAndDelete(id)
+    res.redirect('/campgrounds')
+
 })
 
 app.listen(process.env.PORT, () => [
