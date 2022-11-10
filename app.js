@@ -5,7 +5,8 @@ const mongoose = require('mongoose')
 const Campground = require('./models/campgrounds')
 const { urlencoded } = require('express')
 const methodOverride = require('method-override')
-// const campgrounds = require('./models/campgrounds')
+const morgan = require('morgan')
+const ejsMate = require('ejs-mate')
 
 const app = express()
 dotenv.config()
@@ -17,11 +18,13 @@ db.once('open', () => {
     console.log('Database connected')
 })
 
+app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
 app.use(urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
+app.use(morgan('tiny'))
 
 app.get('/', (req, res) => {
     res.render('home')
@@ -62,7 +65,6 @@ app.delete('/campgrounds/:id', async (req, res) => {
     const { id } = req.params
     await Campground.findByIdAndDelete(id)
     res.redirect('/campgrounds')
-
 })
 
 app.listen(process.env.PORT, () => [
