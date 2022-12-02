@@ -8,6 +8,7 @@ const morgan = require('morgan')
 const ejsMate = require('ejs-mate')
 const campgrounds = require('./routes/campgrounds')
 const reviews = require('./routes/reviews')
+const session = require('express-session')
 
 const app = express()
 dotenv.config()
@@ -27,6 +28,17 @@ app.use(urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 app.use(morgan('tiny'))
 app.use(express.static(path.join(__dirname, 'public')))
+const sessionConfig = {
+    secret: 'thisshouldbeabettersecret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        httpOnly: true
+    }
+}
+app.use(session(sessionConfig))
 
 app.use('/campgrounds', campgrounds)
 app.use('/campgrounds/:id/reviews', reviews)
